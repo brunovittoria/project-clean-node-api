@@ -2,6 +2,7 @@ import { SignupController } from './signup'
 
 describe('SignupController', () => {
   test('Should return 400 if no name is provided', () => {
+    // Arrange (Preparação)
     const sut = new SignupController()
     const httpRequest = {
       body: {
@@ -10,8 +11,12 @@ describe('SignupController', () => {
         passwordConfirmation: 'any_password'
       }
     }
+    // Act (Ação)
     const httpResponse = sut.handle(httpRequest)
+
+    // Assert (Verificação)
     expect(httpResponse.statusCode).toBe(400)
+    expect(httpResponse.body).toEqual(new Error('Missing param: name'))
   })
 })
 
