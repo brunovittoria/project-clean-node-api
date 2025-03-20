@@ -7,14 +7,27 @@ interface SutTypes {
   emailValidatorStub: EmailValidator
 }
 
-const makeSut = (): SutTypes => { // factory ele serve para criar uma instância do sut (System Under Test) e reutilizar em todos os testes
+const makeEmailValidator = (): EmailValidator => {
   class EmailValidatorStub implements EmailValidator { /// stub é uma classe que implementa a interface e retorna um valor fixo/mockado facilitando o teste
-    isValid (email: string) : boolean {
-      return false
+    isValid (email: string): boolean {
+      return true
     }
   }
+  return new EmailValidatorStub()
+}
 
-  const emailValidatorStub = new EmailValidatorStub()
+const makeEmailValidatorWithError = (): EmailValidator => {
+  class EmailValidatorStub implements EmailValidator { 
+    isValid (email: string): boolean {
+      throw new Error()
+    }
+  }
+  return new EmailValidatorStub()
+}
+
+const makeSut = (): SutTypes => { // factory ele serve para criar uma instância do sut (System Under Test) e reutilizar em todos os testes
+
+  const emailValidatorStub = makeEmailValidator()
   const sut = new SignupController(emailValidatorStub)
 
   return {
@@ -142,12 +155,7 @@ describe('SignupController', () => {
   // Se o email validator retornar uma excecao devemos retornar 500
   test('Should return 500 if email validator throws', () => {
     // Arrange (Preparação)
-    class EmailValidatorStub implements EmailValidator { 
-      isValid (email: string) : boolean {
-        throw new Error()    
-      }
-    }
-    const emailValidatorStub = new EmailValidatorStub()
+    const emailValidatorStub = makeEmailValidatorWithError()
     const sut = new SignupController(emailValidatorStub)
 
     const httpRequest = {
