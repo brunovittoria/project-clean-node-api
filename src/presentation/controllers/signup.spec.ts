@@ -1,10 +1,13 @@
 import { SignupController } from './signup'
 import { MissingParamError, InvalidParamError, ServerError } from '../errors'
 import { EmailValidator } from '../protocols'
+import { AddAccount, AddAccountModel } from '../../domain/usecases/add-account'
+import { AccountModel } from '../../domain/models/account'
 
 interface SutTypes {
   sut: SignupController
   emailValidatorStub: EmailValidator
+  addAccountStub: AddAccount
 }
 
 const makeEmailValidator = (): EmailValidator => {
@@ -16,14 +19,32 @@ const makeEmailValidator = (): EmailValidator => {
   return new EmailValidatorStub()
 }
 
-const makeSut = (): SutTypes => { // factory ele serve para criar uma instância do sut (System Under Test) e reutilizar em todos os testes
+const makeAddAccount = (): AddAccount => {
+  class AddAccountStub implements AddAccount { 
+    add (account: AddAccountModel): AccountModel {
+      const fakeAccount = {
+        id: 'valid_id',
+        name: 'valid_name',
+        email: 'valid_email',
+        password: 'valid_password'
+      }
 
+      return fakeAccount
+    }
+  }
+
+  return new AddAccountStub()
+}
+
+const makeSut = (): SutTypes => { // factory ele serve para criar uma instância do sut (System Under Test) e reutilizar em todos os testes
   const emailValidatorStub = makeEmailValidator()
-  const sut = new SignupController(emailValidatorStub)
+  const addAccountStub = makeAddAccount()
+  const sut = new SignupController(emailValidatorStub, addAccountStub)
 
   return {
     sut,
-    emailValidatorStub
+    emailValidatorStub,
+    addAccountStub
   }
 }
 
@@ -185,6 +206,31 @@ describe('SignupController', () => {
     // Assert (Verificação)
     expect(httpResponse.statusCode).toBe(500)
     expect(httpResponse.body).toEqual(new ServerError())
+  })
+
+  test('Should call AddAccount with correct values', () => {
+    // Arrange (Preparação)
+    const { sut, addAccountStub } = makeSut()
+    const addSpy = jest.spyOn(addAccountStub, 'add')
+
+    const httpRequest = {
+      body: {
+        name: 'any name',
+        email: 'any_email@mail.com',
+        password: 'any_password',
+        passwordConfirmation: 'any_password'
+      }
+    }
+    // Act (Ação)
+    sut.handle(httpRequest)
+
+    // Assert (Verificação)
+    expect(addSpy).toHaveBeenCalledWith({
+      name: 'any name',
+      email: 'any_email@mail.com',
+      password: 'any_password'
+    })
+
   })
 
 })
