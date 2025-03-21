@@ -16,15 +16,6 @@ const makeEmailValidator = (): EmailValidator => {
   return new EmailValidatorStub()
 }
 
-const makeEmailValidatorWithError = (): EmailValidator => {
-  class EmailValidatorStub implements EmailValidator { 
-    isValid (email: string): boolean {
-      throw new Error()
-    }
-  }
-  return new EmailValidatorStub()
-}
-
 const makeSut = (): SutTypes => { // factory ele serve para criar uma instância do sut (System Under Test) e reutilizar em todos os testes
 
   const emailValidatorStub = makeEmailValidator()
@@ -155,8 +146,11 @@ describe('SignupController', () => {
   // Se o email validator retornar uma excecao devemos retornar 500
   test('Should return 500 if email validator throws', () => {
     // Arrange (Preparação)
-    const emailValidatorStub = makeEmailValidatorWithError()
-    const sut = new SignupController(emailValidatorStub)
+    const { sut, emailValidatorStub } = makeSut()
+
+    jest.spyOn(emailValidatorStub, 'isValid').mockImplementationOnce(() => {
+      throw new Error() //Esta e uma forma de simular um erro sem precisar criar uma factory nova
+    })
 
     const httpRequest = {
       body: {
