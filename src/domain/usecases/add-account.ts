@@ -8,7 +8,7 @@ export interface AddAccountModel {
 }
 
 export interface AddAccount {
-  add (account: AddAccountModel): AccountModel
+  add (account: AddAccountModel): Promise<AccountModel>
 }
 
 //Criamos essas interfaces aqui dentro e nao dentro de protocols pois no TDD as interfaces dos useCases sao criadas dentro do useCase e nao dentro de protocols
