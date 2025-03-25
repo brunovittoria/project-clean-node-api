@@ -1,6 +1,11 @@
 import { SignupController } from './signup'
 import { MissingParamError, InvalidParamError, ServerError } from '../../errors'
-import { EmailValidator, AddAccount, AddAccountModel, AccountModel } from '../signup/signup-protocols'
+import {
+  EmailValidator,
+  AddAccount,
+  AddAccountModel,
+  AccountModel
+} from '../signup/signup-protocols'
 
 interface SutTypes {
   sut: SignupController
@@ -9,8 +14,9 @@ interface SutTypes {
 }
 
 const makeEmailValidator = (): EmailValidator => {
-  class EmailValidatorStub implements EmailValidator { /// stub é uma classe que implementa a interface e retorna um valor fixo/mockado facilitando o teste
-    isValid (email: string): boolean {
+  class EmailValidatorStub implements EmailValidator {
+    /// stub é uma classe que implementa a interface e retorna um valor fixo/mockado facilitando o teste
+    isValid(email: string): boolean {
       return true
     }
   }
@@ -18,8 +24,8 @@ const makeEmailValidator = (): EmailValidator => {
 }
 
 const makeAddAccount = (): AddAccount => {
-  class AddAccountStub implements AddAccount { 
-    async add (account: AddAccountModel): Promise<AccountModel> {
+  class AddAccountStub implements AddAccount {
+    async add(account: AddAccountModel): Promise<AccountModel> {
       const fakeAccount = {
         id: 'valid_id',
         name: 'valid_name',
@@ -27,14 +33,15 @@ const makeAddAccount = (): AddAccount => {
         password: 'valid_password'
       }
 
-      return new Promise(resolve => resolve(fakeAccount))
+      return new Promise((resolve) => resolve(fakeAccount))
     }
   }
 
   return new AddAccountStub()
 }
 
-const makeSut = (): SutTypes => { // factory ele serve para criar uma instância do sut (System Under Test) e reutilizar em todos os testes
+const makeSut = (): SutTypes => {
+  // factory ele serve para criar uma instância do sut (System Under Test) e reutilizar em todos os testes
   const emailValidatorStub = makeEmailValidator()
   const addAccountStub = makeAddAccount()
   const sut = new SignupController(emailValidatorStub, addAccountStub)
@@ -108,7 +115,7 @@ describe('SignupController', () => {
       body: {
         name: 'any name',
         email: 'any_email@mail.com',
-        password: 'any_password',
+        password: 'any_password'
       }
     }
     // Act (Ação)
@@ -252,7 +259,6 @@ describe('SignupController', () => {
       email: 'any_email@mail.com',
       password: 'any_password'
     })
-
   })
 
   test('Should return 200 if an valid data is provided', async () => {
@@ -271,7 +277,7 @@ describe('SignupController', () => {
     const httpResponse = await sut.handle(httpRequest)
 
     // Assert (Verificação)
-    expect(httpResponse.statusCode).toBe(400)
+    expect(httpResponse.statusCode).toBe(200)
     expect(httpResponse.body).toEqual({
       id: 'valid_id',
       name: 'valid_name',
@@ -279,5 +285,4 @@ describe('SignupController', () => {
       password: 'valid_password'
     })
   })
-
 })
